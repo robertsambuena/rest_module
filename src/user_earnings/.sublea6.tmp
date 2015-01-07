@@ -1,0 +1,79 @@
+(function () {
+    'use strict';
+    angular
+        .module('ui.freedom')
+        .factory('earnings_factory', factory);
+
+    //@ngInject
+    function factory (userearningsService, localStorageService, $rootScope, $q) {
+        var defer, earnings = { load: get_reports};
+
+        return earnings;
+
+        function get_reports (refresh) {
+            defer = $q.defer();
+            earnings.reports = localStorageService.get($rootScope.access_token + 'reports');
+            console.log('   earnings.reports', earnings.reports);
+            if( is_empty(earnings.reports) || refresh){
+                console.log('   empty', userearningsService);
+                userearningsService.callRange().then(function(data){
+                    console.log('callRange   data', data);
+                    earnings.reports = data;
+                    localStorageService.set($rootScope.access_token+ 'reports',data);
+
+                    // earnings.start = earnings.reports[earnings.reports.length - 1];
+                    set_list_reports(false, false);
+                    defer.resolve(data);
+                }, function(data){
+                    console.log('   rejected');
+                    defer.reject(data);
+                });
+            } else {
+                defer.resolve(earnings.reports);
+            }
+            return defer.promise;
+        }
+
+        // function set_defaults () {
+        //     earnings.latest_report = earnings.reports[earnings.reports.length - 1];
+        // }
+
+
+        function get_channel_earnings (list_reports, refresh) {
+            defer = $q.defer();
+            earnings.channel_earnings = localStorageService.get($rootScope.access_token + 'earnings');
+            if (is_empty(earnings.channel_earnings || true)) {
+
+                userearningsService.getReportFromDate(list_reports).then(function(data){
+                    earnings.channel_earnings = data;
+                    console.log('channel_earnings   data', data);
+                    localStorageService.set($rootScope.access_token + 'earnings',data);
+                    defer.resolve(data);
+                }, function(data){
+                    console.log('   rejected');
+                    defer.reject(data);
+                });
+            }
+        }
+
+        function set_list_reports (start, after) {
+            console.log('   start', start);
+            console.log('   start', start);
+            if (start || after){
+
+            } else {
+
+                for (var i = earnings.reports.length - 1; i >= 0; i--) {
+                    earnings.list_reports += earnings.reports[i] + ', ';
+                }
+                console.log('   earnings.list_reports', earnings.list_reports);
+                // earnings.list_reports = list_reports;
+            }
+        }
+
+    }
+    factory.$inject = ["userearningsService", "localStorageService", "$rootScope", "$q"];
+
+
+
+})();
