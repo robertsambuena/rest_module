@@ -3,6 +3,8 @@ rest module of new dashboard(frontend)
 
 check this out
 
-npm install
+    npm install
 
-grunt
+    grunt
+
+minified file will be in /build
